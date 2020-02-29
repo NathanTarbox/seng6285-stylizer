@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Image styling via Machine Learning{% endblock %}
+
+{% block main %}
+
+
+<div class="container">
+  <div class="card-deck mb-3">
+    <div class="card mb-4 shadow-sm">
+      <div class="card-header">
+        <h4 class="my-0 font-weight-normal text-center">File</h4>
+      </div>
+      <div class="card-body">
+        <form action="proc" method="post" enctype="multipart/form-data">
+          <!-- Using images instead of radio buttons: https://stackoverflow.com/questions/17541614/use-images-instead-of-radio-buttons -->
+          <p>Select the style:</p>
+          <input type="radio" id="cubism26" name="convertStyle" value="cubism26" checked='true'>
+          <label for="cubism26">Cubism</label>
+          <input type="radio" id="marbles" name="convertStyle" value="marbles">
+          <label for="marbles">Marbles</label>
+          <input type="radio" id="napoleon" name="convertStyle" value="napoleon">
+          <label for="napoleon">Napoleon</label>
+          <input type="radio" id="sailormoon" name="convertStyle" value="sailormoon">
+          <label for="sailormoon">Sailor Moon</label><br>
+          <input type="radio" id="starry" name="convertStyle" value="starry">
+          <label for="starry">Starry Night</label>
+          <input type="radio" id="sunephant" name="convertStyle" value="sunephant">
+          <label for="sunephant">Sunephant</label>
+          <input type="radio" id="candy" name="convertStyle" value="candy">
+          <label for="candy">Candy</label>
+          <input type="radio" id="green_swirly" name="convertStyle" value="green_swirly">
+          <label for="green_swirly">green_swirly</label><br>
+          <input type="radio" id="mosaic" name="convertStyle" value="mosaic">
+          <label for="mosaic">mosaic</label>
+          <input type="radio" id="rain_princess" name="convertStyle" value="rain_princess">
+          <label for="rain_princess">rain_princess</label>
+          <input type="radio" id="udnie" name="convertStyle" value="udnie">
+          <label for="udnie">udnie</label><br>
+          <label for="file">File to Style:</label>
+          <input type="file" class="form-control" name="file" id="file" required>
+          <br>
+          <button class="btn btn-primary btn-lg btn-block" type="submit">Stylize</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock %}
