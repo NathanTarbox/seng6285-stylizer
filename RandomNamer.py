@@ -112,5 +112,6 @@ left = [ 	"admiring",
 right = ["antioch", "banksy", "benglis", "bernini", "blue", "bosch", "botero", "botticelli", "bourgeois", "brancusi", "bruegel", "canova", "caravaggio", "cezanne", "cézanne", "dali", "david", "davinci", "degas", "delacroix", "donatello", "duchamp", "elgreco", "friedrich", "ghiberti", "giacometti", "giger", "goya", "gris", "hamilton", "hokusai", "homer", "houdon", "johns", "judson", "kahlo", "kandinsky", "kinkade", "klee", "lewis", "lollobrigida", "maar", "manet", "matisse", "michalangelo", "mondrian", "monet", "montgomery", "okeeffe", "picasso", "pollock", "praxiteles", "quinn", "raphael", "rembrandt", "rodin", "rothko", "rouseau", "rubens", "sargent", "smith", "tapies", "thorvaldsen", "titian", "vaneyck", "vangogh", "vermeer", "warhol", "waterhouse", "whistler", "whiteread", "wood"]
 
 class RandomNamer:
-	def getName():
-		return "{}_{}".format(random.choice(left), random.choice(right))
+    @staticmethod
+    def getName():
+        return "{}_{}".format(random.choice(left), random.choice(right))

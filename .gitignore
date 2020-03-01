@@ -1,4 +1,6 @@
 static/user_files/*
+static/offeredStyles/*
 Ex_Files_Flask_EssT/
 __pycache__/
 .vscode/
+was_requirements.txt
