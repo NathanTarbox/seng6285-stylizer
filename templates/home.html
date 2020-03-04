@@ -24,13 +24,13 @@
     </thead>
     {% for image in images %}
     <tr>
-      <td>{{image['name']}}</td>
-      <td>{{image['style']}}</td>
+      <td>{{image.imagename}}</td>
+      <td>{{image.style}}</td>
       <td>
-        {% if 'url' not in image.keys() or image['url'] is none %}
-        Processing. . . 
+        {% if image.producturi is none %}
+        ERRORd
         {% else %}
-        <a href="{{image['url']}}" target="_blank">View</a>
+        <a href="{{image.producturi}}" target="_blank">View</a>
         {% endif %}
       </td>
     </tr>

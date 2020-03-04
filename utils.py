@@ -14,11 +14,16 @@ def load_image(filename, size=None, scale=None):
     return img
 
 
-def save_image(filename, data):
+def save_image(data, filename=None, stream=None):
     img = data.clone().clamp(0, 255).numpy()
     img = img.transpose(1, 2, 0).astype("uint8")
     img = Image.fromarray(img)
-    img.save(filename)
+    if stream is None:
+        print("img save file")
+        img.save(filename)
+    else:
+        print("img save stream")
+        img.save(stream, format="png")
 
 
 def gram_matrix(y):

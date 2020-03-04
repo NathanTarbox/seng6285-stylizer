@@ -1,5 +1,13 @@
 import sys
-sys.path = ['/opt/python/current/app', '/opt/python/run/venv/local/lib64/python3.6/site-packages', '/opt/python/run/venv/local/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6', '/opt/python/run/venv/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/site-packages', '/opt/python/run/venv/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6/lib-dynload', '/opt/python/run/venv/local/lib/python3.6/dist-packages', '/usr/lib64/python3.6', '/usr/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/dist-packages/']
+from os import environ
+print("Flask_env=",environ['FLASK_ENV'])
+if environ['FLASK_ENV'] != 'development':
+    sys.path = ['/opt/python/current/app', '/opt/python/run/venv/local/lib64/python3.6/site-packages', '/opt/python/run/venv/local/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6', '/opt/python/run/venv/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/site-packages', '/opt/python/run/venv/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6/lib-dynload', '/opt/python/run/venv/local/lib/python3.6/dist-packages', '/usr/lib64/python3.6', '/usr/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/dist-packages/']
+else:
+    print(str(sys.path))
+
+    print("Didn't set path")
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, session, jsonify, make_response
 import json
 import os.path
@@ -15,6 +23,11 @@ import torch
 from torchvision import transforms
 from transformer_net import TransformerNet
 import re
+from flask_sqlalchemy import SQLAlchemy
+from io import BytesIO
+
+BUCKET_NAME = 'seng6285-project'
+
 def stylize(content_image, output_image, model):
     device = torch.device("cpu")
 
@@ -37,7 +50,12 @@ def stylize(content_image, output_image, model):
         style_model.load_state_dict(state_dict)
         style_model.to(device)
         output = style_model(content_image).cpu()
-    utils.save_image(output_image, output[0])
+    if isinstance(output_image, str):
+        print("Util Save File")
+        utils.save_image(filename=output_image, data=output[0])
+    elif isinstance(output_image, BytesIO):
+        print("Util write stream")
+        utils.save_image(data=output[0], stream=output_image)
 
 
 
@@ -45,10 +63,25 @@ def stylize(content_image, output_image, model):
 application = Flask(__name__)
 application.secret_key = b"g\xfe\xd4\xac\x19U\xc7\x14\xa89\x89/'F\xd5a"
 
-STATIC_DIRECTORY = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-USERFILES_DIRECTORY = os.path.join(STATIC_DIRECTORY, 'user_files')
+application.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://admin6285:Group2BDJMN@stylizer-db.cyp8zfafgxaq.us-east-1.rds.amazonaws.com/seng'
 
-def downloadDirectoryFroms3(bucketName,remoteDirectoryName):
+db = SQLAlchemy(application)
+
+class user_data(db.Model):
+    uuid = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(45))
+    imagename = db.Column(db.String(45))
+    secret = db.Column(db.String(45))
+    date = db.Column(db.DateTime, default=datetime.now)
+    style = db.Column(db.String(45))
+    sourceuri = db.Column(db.String(2000))
+    producturi = db.Column(db.String(2000))
+
+
+STATIC_DIRECTORY = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+# USERFILES_DIRECTORY = os.path.join(STATIC_DIRECTORY, 'user_files')
+
+def downloadDirectoryFromS3(bucketName,remoteDirectoryName):
     s3_resource = boto3.resource('s3')
     bucket = s3_resource.Bucket(bucketName) 
     for object in bucket.objects.filter(Prefix = remoteDirectoryName):
@@ -57,9 +90,9 @@ def downloadDirectoryFroms3(bucketName,remoteDirectoryName):
         print(dest)
         bucket.download_file(object.key, dest)
 
-print("Static Dir:", STATIC_DIRECTORY)
+#print("Static Dir:", STATIC_DIRECTORY)
 if len(os.listdir(os.path.join(STATIC_DIRECTORY,"offeredStyles"))) == 0:
-    downloadDirectoryFroms3('seng6285-project', 'offeredStyles')
+    downloadDirectoryFromS3(BUCKET_NAME, 'offeredStyles')
 
 @application.route('/favicon.ico')
 def favicon():
@@ -84,28 +117,8 @@ def home():
 
     return render_template('home.html', images=images, uid=uid, secret=secret)
 
-def loadDataForUser(user, secret):
-
-#     dynDB = boto3.resource('dynamodb')
-#     table = dynDB.Table('stylizer_records')
-#     uid = request.cookies.get('uid')
-#     response = table.query(
-#         KeyConditionExpression=Key('uid').eq(uid) & Key('secret').eq(request.cookies.get('secret'))
-#     )
-#     data = []
-#     for item in response:
-
-# Loading from JSON for now.
-    data = []
-    if os.path.exists("urls.json"):
-        with open('urls.json', 'r') as url_file:
-            urls = json.load(url_file)
-        if user in urls.keys():
-            if secret in urls[user].keys():
-                data = urls[user][secret]
-    return data
-        
-    
+def loadDataForUser(userID, userKey):
+    return user_data.query.filter(user_data.user==userID).filter(user_data.secret==userKey).all()
 
 @application.route('/set-id', methods=['POST'])
 def set_id():
@@ -126,68 +139,65 @@ def update_id():
 
 @application.route('/style-new')
 def style_new():
+    uid = request.cookies.get('uid')
+    return render_template('style_image.html', uid=uid)
 
-    return render_template('style_image.html')
+# @application.route('/ptest', methods=['POST'])
+# def procTest():
+#     f = request.files['file']
+#     f.save("Chuck.png")
+#     save_name = 'test.png'
+#     myBytes = BytesIO()
+#     stylize(f, myBytes, os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
+#     with open(save_name, 'wb') as fp:
+#         fp.write(myBytes.getvalue())
+#     stylize("Chuck.png", "test2.png", os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
+#     return redirect(url_for('style_new'))
+    
 
 @application.route('/proc', methods=['POST'])
 def proc():
-    # Was using this section as a test function to iterate through AWS integration.
-    # Below is jumbled junk at the moment
-
-    # Record into DynamoDB
-    # dynDB = boto3.resource('dynamodb')
-    # table = dynDB.Table('stylizer_records')
-    # response = table.put_item(
-    #     Item={
-    #         'guid':str(uuid.uuid1()),
-    #         'uid':request.cookies.get('uid'),
-    #         'secret':request.cookies.get('secret'),
-    #         'style': request.form['convertStyle'],
-    #         's3-image-path':'seng6285-project/' + secure_filename(f.filename),
-    #         's3-product-url':None
-    #     }
-    # )
-    # record user, secret, style, s3-image-url, s3-product-url (as "in-process") to dynamodb
-    # call method with style
-    # move output to s3
+    # Pull out all the components of the form
     userID = request.cookies.get('uid')
     userKey = request.cookies.get('secret')
+    f = request.files['file']
+    style = request.form['convertStyle']
+    filename = secure_filename(f.filename)
+    # Change extension to png
+    pre, ext = os.path.splitext(filename)
+    pngFilename = f"{pre}.png"    
 
-    urls = {}
-    # Loads json - block won't exist in RDS version
-    if os.path.exists('urls.json'):
-        with open('urls.json', 'r') as url_file:
-            urls = json.load(url_file)
-
-
+    sourceFileName = f"user_data/{userID}/{filename}"
+    destFileName = f"user_data/{userID}/{style}_{pngFilename}"
+    
+    sourceURL = f"http://s3.us-east-1.amazonaws.com/{BUCKET_NAME}/{sourceFileName}"
     # File into S3:
     # Need to set up your AWSCLI and run 'aws config' before this will work
-    # s3 = boto3.resource('s3')
-    # f = request.files['file']
-    # filename = request.form['convertStyle'] + "_" + secure_filename(f.filename)
-    # s3.Bucket('seng6285-project').put_object(Key=filename, Body=f)
+    s3 = boto3.resource('s3')
+    # Save original
+    s3.Bucket(BUCKET_NAME).put_object(Key=sourceFileName, Body=f)
 
+    # Create user_data row, no sourceURL
+    newData = user_data(user=userID, secret=userKey, imagename=filename, style=style,sourceuri=sourceURL, producturi=None)
+    db.session.add(newData)
+    db.session.commit()
+    
+    # Stylize
+    myBytes = BytesIO()
+    stylize(f, myBytes, os.path.join(STATIC_DIRECTORY, "offeredStyles", f"{style}.pth"))
 
-    # Remove json and local file version of this when connected to AWS
-    f = request.files['file']
-    save_name = request.form['convertStyle'] + secure_filename(f.filename)
-    f.save(os.path.join(USERFILES_DIRECTORY, save_name))
-    stylize(os.path.join(USERFILES_DIRECTORY, save_name), os.path.join(USERFILES_DIRECTORY, "out_" + save_name), os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
-    if userID not in urls.keys():
-        urls[userID] = {}
-    if userKey not in urls[userID].keys():
-        urls[userID][userKey] = []
-
-    urls[userID][userKey].append({'name': secure_filename(f.filename), 'style':request.form['convertStyle'], 'url':url_for('static', filename='user_files/out_' + save_name)})
-
-    with open('urls.json', 'w') as url_file:
-        json.dump(urls, url_file)
-
+    # Save Product
+    s3.Bucket(BUCKET_NAME).put_object(Key=destFileName, Body=myBytes.getvalue())
+    
+    # Update Product item
+    newData.producturi = f"http://s3.us-east-1.amazonaws.com/{BUCKET_NAME}/{destFileName}"
+    db.session.commit()
+    
     return redirect(url_for('home'))
 
 @application.errorhandler(404)
 def page_not_found(error):
-    return render_template('page_not_found.html'), 404
+    return render_template('page_not_found.html', uid=uid), 404
 
 def randomString(stringLength=10):
     """Generate a random string of fixed length """
