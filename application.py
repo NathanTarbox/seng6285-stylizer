@@ -1,7 +1,7 @@
 import sys
 from os import environ
-print("Flask_env=",environ['FLASK_ENV'])
-if environ['FLASK_ENV'] != 'development':
+#print("Flask_env=",environ['FLASK_ENV'])
+if 'FLASK_ENV' not in environ.keys() or environ['FLASK_ENV'] != 'development':
     sys.path = ['/opt/python/current/app', '/opt/python/run/venv/local/lib64/python3.6/site-packages', '/opt/python/run/venv/local/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6', '/opt/python/run/venv/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/site-packages', '/opt/python/run/venv/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6/lib-dynload', '/opt/python/run/venv/local/lib/python3.6/dist-packages', '/usr/lib64/python3.6', '/usr/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/dist-packages/']
 else:
     print(str(sys.path))
