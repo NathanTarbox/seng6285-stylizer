@@ -4,3 +4,4 @@ Ex_Files_Flask_EssT/
 __pycache__/
 .vscode/
 was_requirements.txt
+db.uri

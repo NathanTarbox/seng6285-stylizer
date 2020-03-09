@@ -31,7 +31,9 @@ import threading
 application = Flask(__name__)
 application.secret_key = b"g\xfe\xd4\xac\x19U\xc7\x14\xa89\x89/'F\xd5a"
 
-application.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://admin6285:Group2BDJMN@stylizer-db.cyp8zfafgxaq.us-east-1.rds.amazonaws.com/seng'
+with open("db.uri", 'r') as fp:
+    application.config['SQLALCHEMY_DATABASE_URI'] = fp.readline()
+    
 db = SQLAlchemy(application)
 
 class user_data(db.Model):
