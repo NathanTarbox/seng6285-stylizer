@@ -5,17 +5,6 @@
 {% block main %}
 
 <div class="container">
-  <form action="set-id" method="post">
-    <label for="uid">Retrieval ID</label>
-    <input type="text" name="newuid" id="newuid" value="{{uid}}" required>
-    <label for="secret">Retrieval Key</label>
-    <input type="text" name="secret" id="secret" value="{{secret}}" required>
-    <button class="btn btn-primary btn-lg" type="submit">Change</button>
-  </form>
-</div>
-
-
-<div class="container">
   
   <h2>Images created:</h2>
   <table class="table table-hover" style="border: 1px solid black">
@@ -27,10 +16,10 @@
       <td>{{image.imagename}}</td>
       <td>{{image.style}}</td>
       <td>
-        {% if image.producturi is none %}
-        ERRORd
-        {% else %}
+        {% if image.producturi.startswith('http') %}
         <a href="{{image.producturi}}" target="_blank">View</a>
+        {% else %}
+        {{image.producturi}}
         {% endif %}
       </td>
     </tr>

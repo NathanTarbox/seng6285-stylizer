@@ -3,40 +3,104 @@
 {% block title %}Image styling via Machine Learning{% endblock %}
 
 {% block main %}
+<style>
 
+
+
+[type=radio] { 
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* IMAGE STYLES */
+[type=radio] + img {
+  cursor: pointer;
+}
+
+@keyframes border-pulse {
+    35% { outline: rgba(20, 20, 20, 0); }
+    50% { outline: rgba(255, 255, 255, 0); }
+    65% { outline: rgba(20, 20, 20, 0); }
+}
+/* CHECKED STYLES */
+[type=radio]:checked + img {
+  outline: 3px solid red;
+  animation: border-pulse 1s infinite;
+}
+
+
+form {
+  margin:auto;
+  width:100%;
+}
+form>label {
+  display:inline-block;
+  
+  width:24.5%;
+  height:auto;
+}
+
+form>label>img {
+  width:100%;
+  height:auto;
+}
+</style>
 
 <div class="container">
   <div class="card-deck mb-3">
     <div class="card mb-4 shadow-sm">
       <div class="card-header">
-        <h4 class="my-0 font-weight-normal text-center">File</h4>
+        <h4 class="my-0 font-weight-normal text-center">Select style:</h4>
       </div>
-      <div class="card-body">
+      <div class="card-body" id="imgwrapper">
         <form action="proc" method="post" enctype="multipart/form-data">
           <!-- Using images instead of radio buttons: https://stackoverflow.com/questions/17541614/use-images-instead-of-radio-buttons -->
-          <p>Select the style:</p>
-          <input type="radio" id="cubism26" name="convertStyle" value="cubism26" checked='true'>
-          <label for="cubism26">Cubism</label>
-          <input type="radio" id="marbles" name="convertStyle" value="marbles">
-          <label for="marbles">Marbles</label>
-          <input type="radio" id="napoleon" name="convertStyle" value="napoleon">
-          <label for="napoleon">Napoleon</label>
-          <input type="radio" id="sailormoon" name="convertStyle" value="sailormoon">
-          <label for="sailormoon">Sailor Moon</label><br>
-          <input type="radio" id="starry" name="convertStyle" value="starry">
-          <label for="starry">Starry Night</label>
-          <input type="radio" id="sunephant" name="convertStyle" value="sunephant">
-          <label for="sunephant">Sunephant</label>
-          <input type="radio" id="candy" name="convertStyle" value="candy">
-          <label for="candy">Candy</label>
-          <input type="radio" id="green_swirly" name="convertStyle" value="green_swirly">
-          <label for="green_swirly">green_swirly</label><br>
-          <input type="radio" id="mosaic" name="convertStyle" value="mosaic">
-          <label for="mosaic">mosaic</label>
-          <input type="radio" id="rain_princess" name="convertStyle" value="rain_princess">
-          <label for="rain_princess">rain_princess</label>
-          <input type="radio" id="udnie" name="convertStyle" value="udnie">
-          <label for="udnie">udnie</label><br>
+          <label title="Cubism">
+            <input type="radio" id="cubism26" name="convertStyle" value="cubism26" checked='true' title="Cubism">
+            <img class='radio-image' src="static/demonstration/steve-cubism26.png">
+          </label>
+          <label title="marbles">
+            <input type="radio" id="marbles" name="convertStyle" value="marbles">
+            <img class='radio-image' src="static/demonstration/steve-marbles.png">
+          </label>
+          <label title="napoleon">
+            <input type="radio" id="napoleon" name="convertStyle" value="napoleon">
+            <img class='radio-image' src="static/demonstration/steve-napoleon.png">
+          </label>
+          <label title="sailormoon">
+            <input type="radio" id="sailormoon" name="convertStyle" value="sailormoon">
+            <img class='radio-image' src="static/demonstration/steve-sailormoon.png">
+          </label>
+          <label title="starry">
+            <input type="radio" id="starry" name="convertStyle" value="starry">
+            <img class='radio-image' src="static/demonstration/steve-starry.png">
+          </label>
+          <label title="sunephant">
+            <input type="radio" id="sunephant" name="convertStyle" value="sunephant">
+            <img class='radio-image' src="static/demonstration/steve-sunephant.png">
+          </label>
+          <label title="candy">
+            <input type="radio" id="candy" name="convertStyle" value="candy">
+            <img class='radio-image' src="static/demonstration/steve-candy.png">
+          </label>
+          <label title="green_swirly">
+            <input type="radio" id="green_swirly" name="convertStyle" value="green_swirly">
+            <img class='radio-image' src="static/demonstration/steve-green_swirly.png">
+          </label>
+          <label title="mosaic">
+            <input type="radio" id="mosaic" name="convertStyle" value="mosaic">
+            <img class='radio-image' src="static/demonstration/steve-mosaic.png">
+          </label>
+          <label title="rain_princess">
+            <input type="radio" id="rain_princess" name="convertStyle" value="rain_princess">
+            <img class='radio-image' src="static/demonstration/steve-rain_princess.png">
+          </label>
+          <label title="udnie">
+            <input type="radio" id="udnie" name="convertStyle" value="udnie">
+            <img class='radio-image' src="static/demonstration/steve-udnie.png">
+          </label><br>
           <label for="file">File to Style:</label>
           <input type="file" class="form-control" name="file" id="file" required>
           <br>

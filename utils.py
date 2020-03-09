@@ -25,6 +25,9 @@ def save_image(data, filename=None, stream=None):
         print("img save stream")
         img.save(stream, format="png")
 
+def resize(instream, outstream):
+    load_image(instream).save(outstream, format="png")
+
 
 def gram_matrix(y):
     (b, ch, h, w) = y.size()

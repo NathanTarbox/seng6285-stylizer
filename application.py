@@ -1,20 +1,19 @@
 import sys
 from os import environ
 #print("Flask_env=",environ['FLASK_ENV'])
-if 'FLASK_ENV' not in environ.keys() or environ['FLASK_ENV'] != 'development':
+if 'UPSTART_JOB' in environ.keys():
     sys.path = ['/opt/python/current/app', '/opt/python/run/venv/local/lib64/python3.6/site-packages', '/opt/python/run/venv/local/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6', '/opt/python/run/venv/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/site-packages', '/opt/python/run/venv/lib/python3.6/site-packages', '/opt/python/run/venv/lib64/python3.6/lib-dynload', '/opt/python/run/venv/local/lib/python3.6/dist-packages', '/usr/lib64/python3.6', '/usr/lib/python3.6', '/opt/python/run/venv/lib64/python3.6/dist-packages/']
 else:
     print(str(sys.path))
 
     print("Didn't set path")
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, abort, session, jsonify, make_response
+from flask import Flask, render_template, request, redirect, url_for, flash, abort, session, jsonify, make_response, send_from_directory
 import json
 import os.path
 from werkzeug.utils import secure_filename
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-import uuid
 from RandomNamer import RandomNamer
 import string
 import random
@@ -25,8 +24,27 @@ from transformer_net import TransformerNet
 import re
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
+from KaraokeQueue import KaraokeQueue
+import atexit
+import threading
 
-BUCKET_NAME = 'seng6285-project'
+application = Flask(__name__)
+application.secret_key = b"g\xfe\xd4\xac\x19U\xc7\x14\xa89\x89/'F\xd5a"
+
+application.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://admin6285:Group2BDJMN@stylizer-db.cyp8zfafgxaq.us-east-1.rds.amazonaws.com/seng'
+db = SQLAlchemy(application)
+
+class user_data(db.Model):
+    uuid = db.Column(db.Integer, primary_key=True)
+    user = db.Column(db.String(45))
+    imagename = db.Column(db.String(45))
+    secret = db.Column(db.String(45))
+    date = db.Column(db.DateTime, default=datetime.now)
+    style = db.Column(db.String(45))
+    sourceuri = db.Column(db.String(2000))
+    producturi = db.Column(db.String(2000))
+
+
 
 def stylize(content_image, output_image, model):
     device = torch.device("cpu")
@@ -51,35 +69,11 @@ def stylize(content_image, output_image, model):
         style_model.to(device)
         output = style_model(content_image).cpu()
     if isinstance(output_image, str):
-        print("Util Save File")
+        #print("Util Save File")
         utils.save_image(filename=output_image, data=output[0])
     elif isinstance(output_image, BytesIO):
-        print("Util write stream")
+        #print("Util write stream")
         utils.save_image(data=output[0], stream=output_image)
-
-
-
-
-application = Flask(__name__)
-application.secret_key = b"g\xfe\xd4\xac\x19U\xc7\x14\xa89\x89/'F\xd5a"
-
-application.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://admin6285:Group2BDJMN@stylizer-db.cyp8zfafgxaq.us-east-1.rds.amazonaws.com/seng'
-
-db = SQLAlchemy(application)
-
-class user_data(db.Model):
-    uuid = db.Column(db.Integer, primary_key=True)
-    user = db.Column(db.String(45))
-    imagename = db.Column(db.String(45))
-    secret = db.Column(db.String(45))
-    date = db.Column(db.DateTime, default=datetime.now)
-    style = db.Column(db.String(45))
-    sourceuri = db.Column(db.String(2000))
-    producturi = db.Column(db.String(2000))
-
-
-STATIC_DIRECTORY = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-# USERFILES_DIRECTORY = os.path.join(STATIC_DIRECTORY, 'user_files')
 
 def downloadDirectoryFromS3(bucketName,remoteDirectoryName):
     s3_resource = boto3.resource('s3')
@@ -89,10 +83,6 @@ def downloadDirectoryFromS3(bucketName,remoteDirectoryName):
         dest = os.path.join(STATIC_DIRECTORY, str(object.key))
         print(dest)
         bucket.download_file(object.key, dest)
-
-#print("Static Dir:", STATIC_DIRECTORY)
-if len(os.listdir(os.path.join(STATIC_DIRECTORY,"offeredStyles"))) == 0:
-    downloadDirectoryFromS3(BUCKET_NAME, 'offeredStyles')
 
 @application.route('/favicon.ico')
 def favicon():
@@ -120,12 +110,11 @@ def home():
 def loadDataForUser(userID, userKey):
     return user_data.query.filter(user_data.user==userID).filter(user_data.secret==userKey).all()
 
-@application.route('/set-id', methods=['POST'])
+@application.route('/set-id', methods=['GET'])
 def set_id():
     uid = request.cookies.get('uid')
-    newuid = request.form['newuid']
-    secret = request.form['secret']
-    resp = make_response(render_template('set_id.html', uid=uid, newuid=newuid, secret=secret))
+    secret = request.cookies.get('secret')
+    resp = make_response(render_template('set_id.html', uid=uid, newuid=uid, secret=secret))
     return resp
 
 @application.route('/update-id', methods=['POST'])
@@ -162,41 +151,132 @@ def proc():
     userKey = request.cookies.get('secret')
     f = request.files['file']
     style = request.form['convertStyle']
-    filename = secure_filename(f.filename)
+    
     # Change extension to png
-    pre, ext = os.path.splitext(filename)
+    pre, ext = os.path.splitext(secure_filename(f.filename))
     pngFilename = f"{pre}.png"    
 
-    sourceFileName = f"user_data/{userID}/{filename}"
-    destFileName = f"user_data/{userID}/{style}_{pngFilename}"
+    sourceFileName = f"user_data/{userID}/{pngFilename}"
     
-    sourceURL = f"http://s3.us-east-1.amazonaws.com/{BUCKET_NAME}/{sourceFileName}"
+
+    # Think before we act:
+    # 1. The source needs to be saved AND we need to run the operation. (regular case)
+    # 2. The file failed to save, but the order could already be submitted (try resaving file)
+    # 3. The file could be the same, so we can skip saving source.  (need to submit order)    
+    # 4. The file is saved, the order is submitted.  (Skip everything, duplicate order)
+    
+    isFileSaved = False
     # File into S3:
     # Need to set up your AWSCLI and run 'aws config' before this will work
     s3 = boto3.resource('s3')
-    # Save original
-    s3.Bucket(BUCKET_NAME).put_object(Key=sourceFileName, Body=f)
+    bucket = s3.Bucket(BUCKET_NAME)
+    objs = list(bucket.objects.filter(Prefix=sourceFileName))
+    if len(objs) > 0 and objs[0].key == sourceFileName:
+        isFileSaved = True # cases 3,4
+    else:
+        # Save original
+        # Cases 1,2
+        fileAsPng = BytesIO()
+        utils.resize(f, fileAsPng)
+        bucket.put_object(Key=sourceFileName, Body=fileAsPng.getvalue())
 
-    # Create user_data row, no sourceURL
-    newData = user_data(user=userID, secret=userKey, imagename=filename, style=style,sourceuri=sourceURL, producturi=None)
-    db.session.add(newData)
-    db.session.commit()
-    
-    # Stylize
-    myBytes = BytesIO()
-    stylize(f, myBytes, os.path.join(STATIC_DIRECTORY, "offeredStyles", f"{style}.pth"))
+    # Check for existing record, duplicate returns 
+    record, isSubmitted = initialize_record(userID, userKey, pngFilename, style)
 
-    # Save Product
-    s3.Bucket(BUCKET_NAME).put_object(Key=destFileName, Body=myBytes.getvalue())
+    if isSubmitted and isFileSaved: # case 4
+        flash("Request identical to one of your previous submissions.", "bg-danger")
+        return redirect(url_for('home'))
     
-    # Update Product item
-    newData.producturi = f"http://s3.us-east-1.amazonaws.com/{BUCKET_NAME}/{destFileName}"
-    db.session.commit()
+    
+
+    processQueue.add(record)
+    flash("Image submitted","bg-success")
     
     return redirect(url_for('home'))
 
+def initialize_record(user, key, filename, style):
+    dupCheck = user_data.query.filter(user_data.user==user).filter(user_data.secret==key).filter(user_data.style==style).filter(user_data.imagename==filename).all()    
+    if len(dupCheck) > 0:
+        return dupCheck[0], True
+
+    # Create user_data row, no producturi because we haven't created it yet
+    sourceURL = f"http://s3.us-east-1.amazonaws.com/{BUCKET_NAME}/user_data/{user}/{filename}"
+    newData = user_data(user=user, secret=key, imagename=filename, style=style,sourceuri=sourceURL, producturi="In Queue")
+    db.session.add(newData)
+    db.session.commit()
+    return newData, False
+
+import time
+
+def run_transformer():
+    #print("Transformer loop started")
+
+    #total = user_data.query.all()
+    #print(f"Found {len(total)} total records")
+
+    #unfinished_Old = user_data.query.filter(user_data.producturi==None).all()
+    #print(f"Found {len(unfinished_Old)} old unfinished records")
+    # for record in unfinished_Old:
+        # processQueue.add(record)
+
+    unfinished_New = user_data.query.filter(user_data.producturi=='In Queue').all()
+    print(f"Found {len(unfinished_New)} New unfinished records")
+    for record in unfinished_New:
+        processQueue.add(record)
+
+
+    while not stopRequested:
+        if not processQueue.hasItems():            
+            #print("Transformer sleeping")
+            time.sleep(5)
+        else:
+            transform(processQueue.next())
+    
+    print("Transformer loop quitting")
+
+def signal_transformer_stop(e=None,wtf=None, ever=None):
+    global stopRequested
+    stopRequested = True
+
+
+def transform(r):
+
+    # print("Transformer working")   
+    # Retrieve source image
+    sourceFileName = f"user_data/{r.user}/{r.imagename}"
+
+    pre, _ = os.path.splitext(r.imagename)
+    pngFilename = f"{pre}.png"   
+    destFileName = f"user_data/{r.user}/{r.style}_{pngFilename}"
+    print("Transformer working on:", destFileName)
+    threadLocalRecord = user_data.query.filter(user_data.uuid==r.uuid).first()    
+    f = BytesIO()
+
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket(BUCKET_NAME)
+    objs = list(bucket.objects.filter(Prefix=sourceFileName))
+    if len(objs) > 0 and objs[0].key == sourceFileName:
+        bucket.download_fileobj(sourceFileName, f)
+        
+        # Stylize
+        outFile = BytesIO()
+        try:
+            stylize(f, outFile, os.path.join(STATIC_DIRECTORY, "offeredStyles", f"{r.style}.pth"))
+            threadLocalRecord.producturi = f"http://s3.us-east-1.amazonaws.com/{BUCKET_NAME}/{destFileName}"
+        except:
+            threadLocalRecord.producturi = "Unreadable"
+        # Save Product
+        if outFile.getbuffer().nbytes > 0:
+            bucket.put_object(Key=destFileName, Body=outFile.getvalue())
+    else:
+        threadLocalRecord.producturi = "File failed to save"
+
+    # Update Product item
+    db.session.commit()
+
 @application.errorhandler(404)
 def page_not_found(error):
+    uid = request.cookies.get('uid')
     return render_template('page_not_found.html', uid=uid), 404
 
 def randomString(stringLength=10):
@@ -204,6 +284,25 @@ def randomString(stringLength=10):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
+# atexit.register(signal_transformer_stop)
+# import signal
+# signal.signal(signal.SIGINT, signal_transformer_stop)
+# signal.signal(signal.SIGTERM, signal_transformer_stop)
+processQueue = KaraokeQueue([], lambda x:x.user)
 
+BUCKET_NAME = 'seng6285-project'
+
+stopRequested = False
+
+# Stop checked boolean for transformer
+
+STATIC_DIRECTORY = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+if len(os.listdir(os.path.join(STATIC_DIRECTORY,"offeredStyles"))) == 0:
+    downloadDirectoryFromS3(BUCKET_NAME, 'offeredStyles')
+
+
+transformerThread = threading.Thread(target=run_transformer)
+transformerThread.daemon = True
+transformerThread.start()
 if __name__ == '__main__':
     application.run(host='0.0.0.0')
