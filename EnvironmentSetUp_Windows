@@ -1,0 +1,38 @@
+Windows environment set up
+1) Download the latest python package and install (must be 3.7 or above)
+2) ensure that you add the python environment path
+3) run following commands
+	pip install virtualenv
+	pip install virtualenvwrapper-win
+4) create a directory to hold your VM and cd into that directory
+5) Create the VM with
+	mkvirtualenv <some name>
+6) set the VM working directory as the project directory
+	setprojectdir <your directory made in 4>
+7) run following commands
+	pip install flask
+	pip install boto3
+	pip install tools
+	pip install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
+	pip install torch
+	pip install sqlarchemy
+	pip install flask_sqlalchemy
+	pip --no-cache-dir install torch
+	pip --no-cache-dir install torchvision
+	pip install mysqlclient
+8) add following to db.uri file mysql://admin6285:2_nu_werds@stylizer-db.cyp8zfafgxaq.us-east-1.rds.amazonaws.com/seng
+9) need to set up your AWS CLI information
+	Following instructions at website 
+	https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-welcome.html
+10) open command and run
+	aws configure
+	enter Access Key provide by nathan
+	enter secre key provided by nathan
+	enter us-east-1 (additional endpoints can be found here https://docs.aws.amazon.com/general/latest/gr/rande.html)
+	enter json
+11)in VM console run command
+	python application.py
+	
+12 use commands to enter and exit VM
+	Deactivate 
+	Workon <some name>

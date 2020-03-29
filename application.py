@@ -92,22 +92,46 @@ def favicon():
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @application.route('/')
-def home():
+def Index(InitialRoute = 'v-pills-home'):
+    temp = request.args.get('InitialRoute')
+    if temp:
+        InitialRoute = temp
     uid = request.cookies.get('uid')
-    secret = request.cookies.get('secret')
-    images = []
     if uid == None:
         uid = RandomNamer.getName()
         secret = randomString()
-        resp = make_response(redirect(url_for('home')))
         resp.set_cookie('uid', value=uid, max_age=60*60*24*365*2)
         resp.set_cookie('secret', value=secret, max_age=60*60*24*365*2)
-        return resp
-    else:
+    return render_template('base.html', uid=uid, IR=InitialRoute)
+
+@application.route('/home')
+def home():
+    return render_template('home.html')
+
+@application.route('/Feedback', methods=['POST'])
+def Feedback():
+    return redirect(url_for('Index'))
+
+@application.route('/GettingStarted')
+def GettingStarted():
+    return render_template('GettingStarted.html')
+
+@application.route('/About')
+def About():
+    return render_template('AboutUs.html')
+
+@application.route('/UserImages')
+def UserImages():
+    return render_template('Images.html')
+
+@application.route('/UserResults')
+def UserResults():
+    uid = request.cookies.get('uid')
+    images = []
+    if uid != None:
+        secret = request.cookies.get('secret')
         images = loadDataForUser(uid, secret)
-
-
-    return render_template('home.html', images=images, uid=uid, secret=secret)
+    return render_template('Results.html', images=images)
 
 def loadDataForUser(userID, userKey):
     return user_data.query.filter(user_data.user==userID).filter(user_data.secret==userKey).all()
@@ -123,28 +147,10 @@ def set_id():
 def update_id():
     newuid = request.form['newuid']
     newsecret = request.form['newsecret']
-    resp = make_response(redirect(url_for('home')))
+    resp = make_response(redirect(url_for('Index', InitialRoute='v-pills-settings')))
     resp.set_cookie('uid', value=newuid, max_age=60*60*24*365*2)
     resp.set_cookie('secret', value=newsecret, max_age=60*60*24*365*2)
-    return resp
-
-@application.route('/style-new')
-def style_new():
-    uid = request.cookies.get('uid')
-    return render_template('style_image.html', uid=uid)
-
-# @application.route('/ptest', methods=['POST'])
-# def procTest():
-#     f = request.files['file']
-#     f.save("Chuck.png")
-#     save_name = 'test.png'
-#     myBytes = BytesIO()
-#     stylize(f, myBytes, os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
-#     with open(save_name, 'wb') as fp:
-#         fp.write(myBytes.getvalue())
-#     stylize("Chuck.png", "test2.png", os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
-#     return redirect(url_for('style_new'))
-    
+    return resp    
 
 @application.route('/proc', methods=['POST'])
 def proc():
@@ -187,14 +193,14 @@ def proc():
 
     if isSubmitted and isFileSaved: # case 4
         flash("Request identical to one of your previous submissions.", "bg-danger")
-        return redirect(url_for('home'))
+        return redirect(url_for('Index',InitialRoute='v-pills-Results'))
     
     
 
     processQueue.add(record)
     flash("Image submitted","bg-success")
     
-    return redirect(url_for('home'))
+    return redirect(url_for('Index',InitialRoute='v-pills-Results'))
 
 def initialize_record(user, key, filename, style):
     dupCheck = user_data.query.filter(user_data.user==user).filter(user_data.secret==key).filter(user_data.style==style).filter(user_data.imagename==filename).all()    
@@ -307,4 +313,5 @@ transformerThread = threading.Thread(target=run_transformer)
 transformerThread.daemon = True
 transformerThread.start()
 if __name__ == '__main__':
-    application.run(host='0.0.0.0')
+    application.run(debug=True, use_reloader=True)
+#    application.run(host='0.0.0.0')

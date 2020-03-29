@@ -1,44 +1,8 @@
-{% extends 'base.html' %}
-
-{% block title %}Image styling via Machine Learning{% endblock %}
-
-{% block main %}
-
-<div class="container">
-  
-  <h2>Images created:</h2>
-  <table class="table table-hover" style="border: 1px solid black">
-    <thead class="thead-dark">
-      <tr><th>Image Name</th><th>Style</th><th>View</th></tr>
-    </thead>
-    {% for image in images %}
-    <tr>
-      <td>{{image.imagename}}</td>
-      <td>{{image.style}}</td>
-      <td>
-        {% if image.producturi.startswith('http') %}
-        <a href="{{image.producturi}}" target="_blank">View</a>
-        {% else %}
-        {{image.producturi}}
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </table>
-  <br>
-  <a class="btn btn-outline-primary btn-lg btn-block" href="{{ url_for('style_new') }}">Stylize a new image</a>
-  </div>
-
-  {% if codes %}
-  <h2>Images created:</h2>
-  <ul>
-    {% for code in codes %}
-    <a href="{{ url_for('redirect_to_url', code=code) }}">
-      <li>{{ code }}</li>
-    </a>
-    {% endfor %}
-  </ul>
-  {% endif %}
+<div>
+  <h4>Welcome Friend!</h3>
+    <p>This program will allow you to customize and create new images. If you are new here
+      please see the <a href="#" onclick="LoadSetting('v-pills-Started');">Getting Started</a> page. If you are not new
+      here
+      then please enjoy yourself and submit any feedback you may have.
+    </p>
 </div>
-
-{% endblock %}

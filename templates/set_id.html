@@ -1,22 +1,25 @@
-{% extends 'base.html' %}
-
-{% block main %}
-
-
-<div class="container text-center">
-  <h1 class="jumbotron-heading">Update your Username/Key?</h1>
-  Your id and secret aren't for security.  They're used to make sure you can retrieve your transformed images.  
+ <div>
+ <h4>User Settings</h3>
+  <div class="form-group">
+<label>Update your Username/Key?</label>
+<p>Your id and secret aren't for security. They're used to make sure you can retrieve your transformed images.  
   They're simple enough to sync your phone, tablet and computer, yet random enough to keep others from guessing.
-  Changing your retrieval keys won't move your images, they're tied to your id and key.
-  <div class="container">
+  Changing your retrieval keys won't move your images, they're tied to your id and key.</p>
+  </div>
+
     <form action="update-id" method="POST">
+      <div class="form-group">
       <label for="uid">Retrieval ID</label>
-      <input type="text" name="newuid" id="newuid" value="{{newuid}}" required>
-      <label for="secret">Retrieval Key</label>
-      <input type="text" name="newsecret" id="newsecret" value="{{secret}}" required>
-      <button class="btn btn-primary btn-lg" type="submit">Yes, really.</button>
+      <input class="form-control" type="text" name="newuid" id="newuid" value="{{newuid}}" required>
+      </div>
+
+      <div class="form-group">
+              <label for="secret">Retrieval Key</label>
+      <input class="form-control" type="text" name="newsecret" id="newsecret" value="{{secret}}" required>
+      </div>
+      <br/>
+      <div class="text-center">
+              <button class="btn btn-primary" type="submit">Update</button>
+      </div>
     </form>
   </div>
-</div>
-
-{% endblock %}

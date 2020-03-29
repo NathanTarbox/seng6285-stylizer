@@ -1,0 +1,28 @@
+<div>
+<h4>About Us</h3>
+<p>This program was written by Nathon Tarbox and edited by the students of East Carolina University. Please feel free to leave 
+    any feedback, good or bad below.
+</p>
+<br/>
+<form action="Feedback" method="POST">
+    <div class="form-group">
+        <label for="uid">Subject</label>
+        <input type="text" class="form-control" name="subject" required>
+    </div>
+
+    <div class="form-group">
+            <label for="secret">Return Email</label>
+        <input type="text" class="form-control" name="returnemail" required>
+    </div>
+
+    <div class="form-group">
+        <label for="secret">Body</label>
+        <textarea rows="15" class="form-control" type="text" name="body" required></textarea>
+    </div>
+
+    <br/>
+    <div class="text-center">
+            <button class="btn btn-primary" type="submit">Submit Feedback</button>
+    </div>
+</form>
+</div>

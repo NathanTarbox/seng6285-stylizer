@@ -1,0 +1,77 @@
+<div>
+    <h4>Stylize Results</h3>
+</div>
+{%if images|length > 0%}
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>Image Name</th>
+                <th>Style</th>
+                <th>View</th>
+            </tr>
+        </thead>
+        {% for image in images %}
+        <tr>
+            <td>{{image.imagename}}</td>
+            <td>{{image.style}}</td>
+            <td>
+                {% if image.producturi.startswith('http') %}
+                <button type="button" class="btn btn-link" onclick="SetSource('{{image.imagename}}','{{image.producturi}}');"
+                    data-toggle="modal" data-target="#ImagePreview">
+                    Preview
+                </button>
+                {% else %}
+                {{image.producturi}}
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    {%else%}
+    <p>Currently no images. If you have already uploaded an image it will display here shortly.</p>
+    <p>Refreshing in <span id="CountDown">10</span> seconds</p>
+    <script>
+        $(document).ready(function () {
+            ResetTime();
+            refreshData();
+            SetFullRefresh();
+        })
+    </script>
+    {%endif%}
+
+    {% if codes %}
+    <h2>Images created:</h2>
+    <ul>
+        {% for code in codes %}
+        <a href="{{ url_for('redirect_to_url', code=code) }}">
+            <li>{{ code }}</li>
+        </a>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="ImagePreview" tabindex="-1" role="dialog" aria-labelledby="ImagePreviewTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ImagePreviewTitle">Preview - <span id="imgTitle"></span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="imgImagePreview" class="img-fluid"/>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <a type="button" href="" id="imgSave" target="_blank" class="btn btn-primary">Save Image</a>
+            </div>
+        </div>
+    </div>
+</div>
