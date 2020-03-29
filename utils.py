@@ -3,7 +3,7 @@ from PIL import Image
 
 
 def load_image(filename, size=None, scale=None):
-    img = Image.open(filename)
+    img = Image.open(filename).convert(mode='RGB')
     
     if img.size[0] > 1200 or img.size[1] > 1200:
         scale = 1200 / max(img.size[0], img.size[1])

@@ -25,7 +25,6 @@ import re
 from flask_sqlalchemy import SQLAlchemy
 from io import BytesIO
 from KaraokeQueue import KaraokeQueue
-import atexit
 import threading
 
 application = Flask(__name__)
@@ -33,6 +32,8 @@ application.secret_key = b"g\xfe\xd4\xac\x19U\xc7\x14\xa89\x89/'F\xd5a"
 
 with open("db.uri", 'r') as fp:
     application.config['SQLALCHEMY_DATABASE_URI'] = fp.readline()
+
+
     
 db = SQLAlchemy(application)
 
@@ -132,19 +133,6 @@ def update_id():
 def style_new():
     uid = request.cookies.get('uid')
     return render_template('style_image.html', uid=uid)
-
-# @application.route('/ptest', methods=['POST'])
-# def procTest():
-#     f = request.files['file']
-#     f.save("Chuck.png")
-#     save_name = 'test.png'
-#     myBytes = BytesIO()
-#     stylize(f, myBytes, os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
-#     with open(save_name, 'wb') as fp:
-#         fp.write(myBytes.getvalue())
-#     stylize("Chuck.png", "test2.png", os.path.join(STATIC_DIRECTORY, "offeredStyles", request.form['convertStyle'] + ".pth"))
-#     return redirect(url_for('style_new'))
-    
 
 @application.route('/proc', methods=['POST'])
 def proc():
@@ -286,10 +274,6 @@ def randomString(stringLength=10):
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
-# atexit.register(signal_transformer_stop)
-# import signal
-# signal.signal(signal.SIGINT, signal_transformer_stop)
-# signal.signal(signal.SIGTERM, signal_transformer_stop)
 processQueue = KaraokeQueue([], lambda x:x.user)
 
 BUCKET_NAME = 'seng6285-project'
