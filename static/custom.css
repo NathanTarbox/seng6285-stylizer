@@ -1,0 +1,66 @@
+.BodyContent{
+margin:auto;
+max-width: 80%;
+}
+
+.Header{
+    background-image: url("/static/demonstration/Banner.png");
+    background-color: black;
+min-height: 100px;
+}
+
+.Template:hover{
+    cursor: pointer;
+}
+
+.CardSelect{
+    border-color: blue;
+}
+
+@media (max-width: 767.98px) {
+    .BodyContent{
+        margin:auto;
+        max-width: 100%;
+        text-align: center;
+        }
+ }
+
+[type=radio] { 
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  
+  /* IMAGE STYLES */
+  [type=radio] + img {
+    cursor: pointer;
+  }
+  
+  @keyframes border-pulse {
+      35% { outline: rgba(20, 20, 20, 0); }
+      50% { outline: rgba(255, 255, 255, 0); }
+      65% { outline: rgba(20, 20, 20, 0); }
+  }
+  /* CHECKED STYLES */
+  [type=radio]:checked + img {
+    outline: 3px solid red;
+    animation: border-pulse 1s infinite;
+  }
+  
+  
+  form {
+    margin:auto;
+    width:100%;
+  }
+  form>label {
+    display:inline-block;
+    
+    width:24.5%;
+    height:auto;
+  }
+  
+  form>label>img {
+    width:100%;
+    height:auto;
+  }

@@ -1,0 +1,118 @@
+<div>
+    <h4>Image Stylize</h3>
+        <p>To begin, upload an image, select a template, and submit. Thats it!</p>
+        <div>
+            <a class="btn btn-primary btn-block" data-toggle="collapse" href="#collapseExample" role="button"
+                aria-expanded="false" aria-controls="collapseExample">
+                Stylize Now
+            </a>
+            <div class="collapse pt-2" id="collapseExample">
+                <form action="proc" method="post" enctype="multipart/form-data">
+                    <h6>Step 1 <span class="text-muted">Upload an image</span></h6>
+                    <div class="form-group">
+                        <label for="file">File to Style:</label>
+                        <input type="file" class="form-control" name="file" id="file" required>
+                    </div>
+
+                    <br />
+                    <h6>Step 2 <span class="text-muted">Choose a template</span></h6>
+                    <div id="CardItems" class="card-columns">
+                        <!-- Using images instead of radio buttons: https://stackoverflow.com/questions/17541614/use-images-instead-of-radio-buttons -->
+                        <div class="card Template CardSelect" onclick="SetStyle('cubism26', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-cubism26.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Cubism26</h5>
+                                <p class="card-text">Quarky and weird</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('marbles', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-marbles.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Marbles</h5>
+                                <p class="card-text">Playing with stones</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('napoleon', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-napoleon.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Napoleon</h5>
+                                <p class="card-text">Weird hats</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('sailormoon', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-sailormoon.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Sailormoon</h5>
+                                <p class="card-text">Adult Swim anyone?</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('starry', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-starry.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Starry</h5>
+                                <p class="card-text">Just look up</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('sunephant', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-sunephant.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Sunephant</h5>
+                                <p class="card-text">Who even knows...</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('candy', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-candy.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Candy</h5>
+                                <p class="card-text">Something sweet for the eyes</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('green_swirly', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-green_swirly.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Green_swirly</h5>
+                                <p class="card-text">Like the name says</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('mosaic', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-mosaic.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Mosaic</h5>
+                                <p class="card-text">Do like the Romans</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('rain_princess', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-rain_princess.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Rain_princess</h5>
+                                <p class="card-text">No one puts princess in a corner</p>
+                            </div>
+                        </div>
+
+                        <div class="card Template" onclick="SetStyle('udnie', this);">
+                            <img class='card-img-top' src="static/demonstration/steve-udnie.png">
+                            <div class="card-body">
+                                <h5 class="card-title">Udnie</h5>
+                                <p class="card-text">Use your imagination</p>
+                            </div>
+                        </div>
+                    </div>
+                    <input id="TemplateStyle" name="convertStyle" class="d-none" value="Cubism26" />
+                    <br />
+                    <h6>Step 3 <span class="text-muted">Submit</span></h6>
+                    <div class="text-center">
+                        <button class="btn btn-primary btn-block" type="submit">Stylize</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+</div>
