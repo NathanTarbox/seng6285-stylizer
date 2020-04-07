@@ -101,8 +101,10 @@ def Index(InitialRoute = 'v-pills-home'):
     if uid == None:
         uid = RandomNamer.getName()
         secret = randomString()
+        resp = make_response(render_template('base.html', uid=uid, IR=InitialRoute))
         resp.set_cookie('uid', value=uid, max_age=60*60*24*365*2)
         resp.set_cookie('secret', value=secret, max_age=60*60*24*365*2)
+        return resp
     return render_template('base.html', uid=uid, IR=InitialRoute)
 
 @application.route('/home')
@@ -158,6 +160,7 @@ def proc():
     # Pull out all the components of the form
     userID = request.cookies.get('uid')
     userKey = request.cookies.get('secret')
+    # TODO: Check for null user & secret
     f = request.files['file']
     style = request.form['convertStyle']
     
@@ -307,7 +310,12 @@ stopRequested = False
 # Stop checked boolean for transformer
 
 STATIC_DIRECTORY = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-if len(os.listdir(os.path.join(STATIC_DIRECTORY,"offeredStyles"))) == 0:
+MODEL_FOLDER = os.path.join(STATIC_DIRECTORY,"offeredStyles")
+
+# If new install or server instance, pull models from S3
+if not os.path.exists(MODEL_FOLDER):
+    os.mkdir(MODEL_FOLDER)
+if len(os.listdir(MODEL_FOLDER)) == 0:
     downloadDirectoryFromS3(BUCKET_NAME, 'offeredStyles')
 
 
